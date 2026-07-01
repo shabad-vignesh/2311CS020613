@@ -1,58 +1,69 @@
 import { useState } from "react";
 import {
   Alert,
-  Badge,
   Box,
   CircularProgress,
   Divider,
-  Pagination,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   Typography,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 
 import { NotificationCard } from "../components/NotificationCard";
-import { NotificationFilter } from "../components/NotificationFilter";
 import { useNotifications } from "../hooks/useNotifications";
 
 export function NotificationsPage() {
-  const [filter, setFilter] = useState("all");
-  const [page, setPage] = useState(1);
+  const [type, setType] = useState("all");
+  const [priority, setPriority] = useState("all");
 
-  
-  const { notifications, totalPages, loading, error } = useNotifications(
-    filter,
-    page,
-    5
-  );
-
-  const unreadCount = notifications.filter((n) => n.isUnread || !n.read).length;
-
-  const handleFilterChange = (newFilter) => {
-    setFilter(newFilter);
-    setPage(1); 
-  };
-
-  const handlePageChange = (_, newPage) => {
-    setPage(newPage);
-  };
+  const { notifications, loading, error } = useNotifications(type, priority, 5);
 
   return (
-    <Box sx={{ maxWidth: 720, mx: "auto", px: 2, py: 4 }}>
+    <Box sx={{ maxWidth: 760, mx: "auto", px: 2, py: 4 }}>
       <Stack direction="row" alignItems="center" spacing={1.5} mb={3}>
-        <Badge badgeContent={unreadCount} color="primary" max={99}>
-          <NotificationsIcon sx={{ fontSize: 28 }} />
-        </Badge>
+        <NotificationsIcon />
         <Typography variant="h5" fontWeight={700}>
-          Notifications
+          Priority Inbox
         </Typography>
       </Stack>
 
       <Divider sx={{ mb: 3 }} />
 
-      <Box sx={{ mb: 3 }}>
-        <NotificationFilter value={filter} onChange={handleFilterChange} />
-      </Box>
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={3}>
+        <FormControl fullWidth size="small">
+          <InputLabel id="type-label">Type</InputLabel>
+          <Select
+            labelId="type-label"
+            value={type}
+            label="Type"
+            onChange={(e) => setType(e.target.value)}
+          >
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="placement">Placement</MenuItem>
+            <MenuItem value="result">Result</MenuItem>
+            <MenuItem value="event">Event</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth size="small">
+          <InputLabel id="priority-label">Priority</InputLabel>
+          <Select
+            labelId="priority-label"
+            value={priority}
+            label="Priority"
+            onChange={(e) => setPriority(e.target.value)}
+          >
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="high">High</MenuItem>
+            <MenuItem value="medium">Medium</MenuItem>
+            <MenuItem value="low">Low</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
 
       {loading && (
         <Box display="flex" justifyContent="center" py={6}>
@@ -68,24 +79,12 @@ export function NotificationsPage() {
         <Alert severity="info">No notifications found.</Alert>
       )}
 
-      {!loading && !error && notifications.length > 0 && (
+      {!loading && !error && (
         <Stack spacing={1.5}>
           {notifications.map((n) => (
             <NotificationCard key={n.id} notification={n} />
           ))}
         </Stack>
-      )}
-
-      {!loading && !error && totalPages > 1 && (
-        <Box display="flex" justifyContent="center" mt={4}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            shape="rounded"
-          />
-        </Box>
       )}
     </Box>
   );
